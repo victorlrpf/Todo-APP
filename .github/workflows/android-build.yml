@@ -9,26 +9,26 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Install MAUI workload
-      run: dotnet workload install maui
+      - name: Install MAUI
+        run: dotnet workload install maui
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore
+        run: dotnet restore
 
-    - name: Build Android APK
-      run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release
+      - name: Publish APK
+        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release
 
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-apk
-        path: |
-          **/bin/Release/net8.0-android/*.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: |
+            **/bin/Release/net8.0-android/*.apk
