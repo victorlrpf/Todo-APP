@@ -3,64 +3,31 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build-android:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout do código
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Instalar .NET 8.0 SDK
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: 8.0.x
 
-    - name: Instalar workload MAUI
+    - name: Clean workloads
+      run: dotnet workload clean
+
+    - name: Install MAUI
       run: dotnet workload install maui
 
-    - name: Restaurar dependências
-      run: dotnet restore TodoApp/TodoApp.csproj
+    - name: Show dotnet info
+      run: dotnet --info
+      
+    - name: Restore
+      run: dotnet restore
 
-    - name: Build do APK (Release)
-      run: dotnet publish TodoApp/TodoApp.csproj -c Release -f net8.0-android --no-restore
-
-    - name: Localizar APK gerado
-      id: find_apk
-      run: |
-        $apk = Get-ChildItem -Path TodoApp -Recurse -Filter "*.apk" | Select-Object -First 1
-        if ($apk) {
-          echo "APK_PATH=$($apk.FullName)" >> $env:GITHUB_OUTPUT
-          echo "Encontrado: $($apk.FullName)"
-        } else {
-          echo "Nenhum APK encontrado, procurando AAB..."
-          $aab = Get-ChildItem -Path TodoApp -Recurse -Filter "*.aab" | Select-Object -First 1
-          if ($aab) {
-            echo "APK_PATH=$($aab.FullName)" >> $env:GITHUB_OUTPUT
-            echo "Encontrado AAB: $($aab.FullName)"
-          }
-        }
-      shell: pwsh
-
-    - name: Listar artefatos gerados
-      run: |
-        Get-ChildItem -Path TodoApp -Recurse -Include "*.apk","*.aab" | ForEach-Object { echo $_.FullName }
-      shell: pwsh
-
-    - name: Upload do APK como artefato
-      uses: actions/upload-artifact@v4
-      with:
-        name: TodoApp-Android-APK
-        path: |
-          TodoApp/**/*-Signed.apk
-          TodoApp/**/*.apk
-        if-no-files-found: warn
-
-    - name: Upload do AAB como artefato (alternativo)
-      uses: actions/upload-artifact@v4
-      with:
-        name: TodoApp-Android-AAB
-        path: TodoApp/**/*.aab
-        if-no-files-found: ignore
+    - name: Build APK
+      run: dotnet publish -f net8.0-android -c Release
