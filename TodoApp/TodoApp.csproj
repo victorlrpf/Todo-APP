@@ -15,6 +15,11 @@
     <ApplicationVersion>1</ApplicationVersion>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    
+    <!-- Configurações para garantir a geração do APK no GitHub Actions -->
+    <AndroidPackageFormats Condition="'$(Configuration)' == 'Release'">apk</AndroidPackageFormats>
+    <AndroidKeyStore Condition="'$(Configuration)' == 'Release'">false</AndroidKeyStore>
+    <AndroidGenerateAppBundle Condition="'$(Configuration)' == 'Release'">false</AndroidGenerateAppBundle>
   </PropertyGroup>
 
   <ItemGroup>
