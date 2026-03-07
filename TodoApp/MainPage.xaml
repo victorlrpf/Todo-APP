@@ -8,45 +8,55 @@
              Title="Registrador de Tarefas">
 
     <Grid RowDefinitions="Auto,*" RowSpacing="0">
-        
-        <!-- Header com Contadores e Tema -->
-        <Grid Padding="20,30,20,20" ColumnDefinitions="*,Auto" BackgroundColor="#512BD4">
+
+        <!-- HEADER -->
+        <Grid Padding="20,30,20,20"
+              ColumnDefinitions="*,Auto"
+              BackgroundColor="#512BD4">
+
             <VerticalStackLayout Spacing="8">
+
                 <Label Text="📋 Minhas Tarefas"
                        FontSize="28"
                        FontAttributes="Bold"
-                       TextColor="White" />
+                       TextColor="White"/>
+
                 <HorizontalStackLayout Spacing="20">
+
                     <VerticalStackLayout>
                         <Label Text="{Binding TotalTasks}"
                                FontSize="24"
                                FontAttributes="Bold"
-                               TextColor="White" />
+                               TextColor="White"/>
                         <Label Text="Total"
                                FontSize="12"
-                               TextColor="#D4C6FF" />
+                               TextColor="#D4C6FF"/>
                     </VerticalStackLayout>
+
                     <VerticalStackLayout>
                         <Label Text="{Binding CompletedTasks}"
                                FontSize="24"
                                FontAttributes="Bold"
-                               TextColor="#10B981" />
+                               TextColor="#10B981"/>
                         <Label Text="Concluídas"
                                FontSize="12"
-                               TextColor="#D4C6FF" />
+                               TextColor="#D4C6FF"/>
                     </VerticalStackLayout>
+
                     <VerticalStackLayout>
                         <Label Text="{Binding PendingTasks}"
                                FontSize="24"
                                FontAttributes="Bold"
-                               TextColor="#FFC107" />
+                               TextColor="#FFC107"/>
                         <Label Text="Pendentes"
                                FontSize="12"
-                               TextColor="#D4C6FF" />
+                               TextColor="#D4C6FF"/>
                     </VerticalStackLayout>
+
                 </HorizontalStackLayout>
+
             </VerticalStackLayout>
-            
+
             <Button Grid.Column="1"
                     Text="🌙"
                     FontSize="24"
@@ -55,175 +65,165 @@
                     CornerRadius="25"
                     BackgroundColor="#6366F1"
                     Command="{Binding ToggleThemeCommand}"
-                    VerticalOptions="Start" />
+                    VerticalOptions="Start"/>
+
         </Grid>
 
-        <!-- Conteúdo Principal -->
+        <!-- CONTEÚDO -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="0" Padding="0">
-                
-                <!-- Seção de Filtros e Ordenação -->
+
+            <VerticalStackLayout Spacing="0">
+
+                <!-- FILTROS -->
                 <VerticalStackLayout Padding="16,16,16,8" Spacing="12">
-                    
-                    <!-- Filtros por Status -->
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Filtrar por Status"
-                               FontSize="16"
-                               FontAttributes="Bold" />
-                        <HorizontalStackLayout Spacing="8">
-                            <Button Text="Todos"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#E0E0E0"
-                                    TextColor="#333"
-                                    Command="{Binding FilterByStatusCommand}"
-                                    CommandParameter="{x:Null}" />
-                            <Button Text="Em Andamento"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#3B82F6"
-                                    TextColor="White"
-                                    Command="{Binding FilterByStatusCommand}"
-                                    CommandParameter="0" />
-                            <Button Text="Concluído"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#10B981"
-                                    TextColor="White"
-                                    Command="{Binding FilterByStatusCommand}"
-                                    CommandParameter="1" />
-                            <Button Text="Atrasado"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#EF4444"
-                                    TextColor="White"
-                                    Command="{Binding FilterByStatusCommand}"
-                                    CommandParameter="2" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
 
-                    <!-- Ordenação -->
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Ordenar por"
-                               FontSize="16"
-                               FontAttributes="Bold" />
-                        <HorizontalStackLayout Spacing="8">
-                            <Button Text="Data Criação"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#512BD4"
-                                    TextColor="White"
-                                    Command="{Binding ChangeSortOptionCommand}"
-                                    CommandParameter="0" />
-                            <Button Text="Data Conclusão"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#512BD4"
-                                    TextColor="White"
-                                    Command="{Binding ChangeSortOptionCommand}"
-                                    CommandParameter="1" />
-                            <Button Text="Alfabética"
-                                    Padding="12,8"
-                                    FontSize="12"
-                                    BackgroundColor="#512BD4"
-                                    TextColor="White"
-                                    Command="{Binding ChangeSortOptionCommand}"
-                                    CommandParameter="2" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
+                    <Label Text="Filtrar por Status"
+                           FontSize="16"
+                           FontAttributes="Bold"/>
 
-                    <!-- Botão Limpar Filtros -->
-                    <Button Text="Limpar Filtros"
-                            Padding="12,8"
-                            FontSize="14"
-                            BackgroundColor="#F59E0B"
-                            TextColor="White"
-                            Command="{Binding ShowAllTasksCommand}" />
+                    <HorizontalStackLayout Spacing="8">
+
+                        <Button Text="Todos"
+                                Padding="12,8"
+                                FontSize="12"
+                                BackgroundColor="#E0E0E0"
+                                TextColor="#333"
+                                Command="{Binding FilterByStatusCommand}"
+                                CommandParameter="{x:Null}"/>
+
+                        <Button Text="Em Andamento"
+                                Padding="12,8"
+                                FontSize="12"
+                                BackgroundColor="#3B82F6"
+                                TextColor="White"
+                                Command="{Binding FilterByStatusCommand}"
+                                CommandParameter="0"/>
+
+                        <Button Text="Concluído"
+                                Padding="12,8"
+                                FontSize="12"
+                                BackgroundColor="#10B981"
+                                TextColor="White"
+                                Command="{Binding FilterByStatusCommand}"
+                                CommandParameter="1"/>
+
+                        <Button Text="Atrasado"
+                                Padding="12,8"
+                                FontSize="12"
+                                BackgroundColor="#EF4444"
+                                TextColor="White"
+                                Command="{Binding FilterByStatusCommand}"
+                                CommandParameter="2"/>
+
+                    </HorizontalStackLayout>
+
                 </VerticalStackLayout>
 
-                <!-- Nova Tarefa -->
+                <!-- NOVA TAREFA -->
                 <VerticalStackLayout Padding="16,8,16,16" Spacing="8">
+
                     <Label Text="Nova Tarefa"
                            FontSize="16"
-                           FontAttributes="Bold" />
+                           FontAttributes="Bold"/>
+
                     <Entry Placeholder="Nome da tarefa"
                            Text="{Binding NewTaskName}"
-                           Padding="12"
-                           BackgroundColor="#F0F0F0" />
+                           BackgroundColor="#F0F0F0"
+                           Margin="0,4"/>
+
                     <Entry Placeholder="Descrição (opcional)"
                            Text="{Binding NewTaskDescription}"
-                           Padding="12"
-                           BackgroundColor="#F0F0F0" />
+                           BackgroundColor="#F0F0F0"
+                           Margin="0,4"/>
+
                     <Picker Title="Selecione uma categoria"
-                          ItemsSource="{Binding Categories}"
-                          SelectedItem="{Binding SelectedCategoryForNewTask}"
-                          ItemDisplayBinding="{Binding Name}"
-                          BackgroundColor="#F0F0F0"
-                          Margin="0,4" />
+                            ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding SelectedCategoryForNewTask}"
+                            ItemDisplayBinding="{Binding Name}"
+                            BackgroundColor="#F0F0F0"
+                            Margin="0,4"/>
+
                     <Button Text="Adicionar Tarefa"
-                            Padding="12,12"
+                            Padding="12"
                             FontSize="14"
                             BackgroundColor="#10B981"
                             TextColor="White"
-                            Command="{Binding AddTaskCommand}" />
+                            Command="{Binding AddTaskCommand}"/>
+
                 </VerticalStackLayout>
 
-                <!-- Lista de Tarefas -->
+                <!-- LISTA -->
                 <VerticalStackLayout Padding="16,0,16,16" Spacing="8">
+
                     <Label Text="Tarefas"
                            FontSize="16"
-                           FontAttributes="Bold" />
-                    <Grid Padding="0">
+                           FontAttributes="Bold"/>
+
                     <CollectionView ItemsSource="{Binding FilteredTasks}"
                                     SelectionMode="Single">
+
                         <CollectionView.ItemTemplate>
+
                             <DataTemplate x:DataType="models:TaskItem">
+
                                 <SwipeView>
+
                                     <SwipeView.LeftItems>
                                         <SwipeItems SwipeBehaviorOnInvoked="Close">
                                             <SwipeItem Text="Concluir"
                                                        BackgroundColor="#10B981"
                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CompleteTaskCommand}"
-                                                       CommandParameter="{Binding .}" />
+                                                       CommandParameter="{Binding .}"/>
                                         </SwipeItems>
                                     </SwipeView.LeftItems>
+
                                     <SwipeView.RightItems>
                                         <SwipeItems SwipeBehaviorOnInvoked="Close">
                                             <SwipeItem Text="Excluir"
                                                        BackgroundColor="#EF4444"
                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveTaskCommand}"
-                                                       CommandParameter="{Binding .}" />
+                                                       CommandParameter="{Binding .}"/>
                                         </SwipeItems>
                                     </SwipeView.RightItems>
-                                    
+
                                     <Border StrokeShape="RoundRectangle 12"
                                             Stroke="#E0E0E0"
                                             BackgroundColor="White"
                                             Padding="12"
                                             Margin="0,0,0,8">
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
-                                            <VerticalStackLayout Grid.Column="0" Spacing="4">
+
+                                        <Grid ColumnDefinitions="*,Auto"
+                                              RowDefinitions="Auto,Auto"
+                                              ColumnSpacing="12">
+
+                                            <VerticalStackLayout Spacing="4">
+
                                                 <Label Text="{Binding Name}"
                                                        FontSize="16"
-                                                       FontAttributes="Bold" />
+                                                       FontAttributes="Bold"/>
+
                                                 <Label Text="{Binding Description}"
                                                        FontSize="12"
-                                                       Opacity="0.7"
-                                                       IsVisible="{Binding Description, StringFormat='{0:L}', Converter={StaticResource StringToBoolConverter}}" />
-                                                <HorizontalStackLayout Spacing="8" Margin="0,4,0,0">
+                                                       Opacity="0.7"/>
+
+                                                <HorizontalStackLayout Spacing="8">
+
                                                     <Label Text="{Binding Category.Icon}"
-                                                           FontSize="14" />
+                                                           FontSize="14"/>
+
                                                     <Label Text="{Binding Category.Name}"
                                                            FontSize="12"
-                                                           Opacity="0.7" />
+                                                           Opacity="0.7"/>
+
                                                     <Label Text="{Binding Status}"
                                                            FontSize="12"
-                                                           Opacity="0.7" />
+                                                           Opacity="0.7"/>
+
                                                 </HorizontalStackLayout>
+
                                             </VerticalStackLayout>
-                                            
+
                                             <Button Grid.Column="1"
-                                                    Grid.Row="0"
                                                     Grid.RowSpan="2"
                                                     Text="✓"
                                                     FontSize="20"
@@ -234,17 +234,26 @@
                                                     TextColor="White"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ChangeTaskStatusCommand}"
                                                     CommandParameter="{Binding .}"
-                                                    VerticalOptions="Center" />
+                                                    VerticalOptions="Center"/>
+
                                         </Grid>
+
                                     </Border>
+
                                 </SwipeView>
+
                             </DataTemplate>
+
                         </CollectionView.ItemTemplate>
+
                     </CollectionView>
-                  </Grid>
+
                 </VerticalStackLayout>
 
             </VerticalStackLayout>
+
         </ScrollView>
+
     </Grid>
+
 </ContentPage>
