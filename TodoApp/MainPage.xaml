@@ -173,7 +173,7 @@
                     <Label Text="Tarefas"
                            FontSize="16"
                            FontAttributes="Bold" />
-                    
+                    <Grid Padding="0">
                     <CollectionView ItemsSource="{Binding FilteredTasks}"
                                     SelectionMode="Single">
                         <CollectionView.ItemTemplate>
@@ -241,6 +241,7 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                  </Grid>
                 </VerticalStackLayout>
 
             </VerticalStackLayout>
