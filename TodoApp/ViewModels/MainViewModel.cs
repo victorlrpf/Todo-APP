@@ -2,11 +2,21 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using TodoApp.Models;
+using TodoApp.Services;
 
 namespace TodoApp.ViewModels;
 
+public enum SortOption
+{
+    DataCriacao,
+    DataConclusao,
+    Alfabetica
+}
+
 public partial class MainViewModel : ObservableObject
 {
+    private readonly DatabaseService _databaseService;
+
     [ObservableProperty]
     private ObservableCollection<TaskItem> tasks;
 
@@ -29,6 +39,12 @@ public partial class MainViewModel : ObservableObject
     private Category? selectedFilterCategory;
 
     [ObservableProperty]
+    private TaskStatus? selectedFilterStatus;
+
+    [ObservableProperty]
+    private SortOption selectedSortOption = SortOption.DataCriacao;
+
+    [ObservableProperty]
     private string newCategoryName = string.Empty;
 
     [ObservableProperty]
@@ -49,32 +65,81 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int pendingTasks;
 
+    [ObservableProperty]
+    private bool isDarkTheme;
+
     public MainViewModel()
     {
-        Categories = new ObservableCollection<Category>
-        {
-            new() { Name = "Pessoal", Color = "#EC4899", Icon = "🏠" },
-            new() { Name = "Trabalho", Color = "#3B82F6", Icon = "💼" },
-            new() { Name = "Estudos", Color = "#10B981", Icon = "📚" },
-            new() { Name = "Saúde", Color = "#F59E0B", Icon = "💪" },
-            new() { Name = "Compras", Color = "#8B5CF6", Icon = "🛒" }
-        };
+        _databaseService = new DatabaseService();
+        Tasks = new ObservableCollection<TaskItem>();
+        FilteredTasks = new ObservableCollection<TaskItem>();
+        Categories = new ObservableCollection<Category>();
+        
+        InitializeAsync();
+    }
 
-        Tasks = new ObservableCollection<TaskItem>
-        {
-            new() { Name = "Comprar leite e pão", Description = "Ir ao mercado pela manhã", Category = Categories[4], CreatedAt = DateTime.Now.AddDays(-1) },
-            new() { Name = "Reunião com equipe", Description = "Preparar apresentação do projeto", Category = Categories[1], CreatedAt = DateTime.Now.AddHours(-3) },
-            new() { Name = "Estudar .NET MAUI", Description = "Ler documentação oficial", Category = Categories[2], IsCompleted = true, CreatedAt = DateTime.Now.AddDays(-2) },
-            new() { Name = "Caminhada no parque", Description = "30 minutos de exercício", Category = Categories[3], CreatedAt = DateTime.Now },
-            new() { Name = "Pagar conta de luz", Description = "Vencimento dia 10", Category = Categories[0], CreatedAt = DateTime.Now.AddDays(-1) }
-        };
-
-        FilteredTasks = new ObservableCollection<TaskItem>(Tasks);
+    private async void InitializeAsync()
+    {
+        await LoadCategoriesAsync();
+        await LoadTasksAsync();
         UpdateCounters();
     }
 
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            var categoriesFromDb = await _databaseService.GetCategoriesAsync();
+            
+            if (categoriesFromDb.Count == 0)
+            {
+                // Criar categorias padrão
+                var defaultCategories = new List<Category>
+                {
+                    new() { Name = "Pessoal", Color = "#EC4899", Icon = "🏠" },
+                    new() { Name = "Trabalho", Color = "#3B82F6", Icon = "💼" },
+                    new() { Name = "Estudos", Color = "#10B981", Icon = "📚" },
+                    new() { Name = "Saúde", Color = "#F59E0B", Icon = "💪" },
+                    new() { Name = "Compras", Color = "#8B5CF6", Icon = "🛒" }
+                };
+
+                foreach (var category in defaultCategories)
+                {
+                    await _databaseService.SaveCategoryAsync(category);
+                    Categories.Add(category);
+                }
+            }
+            else
+            {
+                foreach (var category in categoriesFromDb)
+                    Categories.Add(category);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao carregar categorias: {ex.Message}");
+        }
+    }
+
+    private async Task LoadTasksAsync()
+    {
+        try
+        {
+            var tasksFromDb = await _databaseService.GetTasksAsync();
+            Tasks.Clear();
+            foreach (var task in tasksFromDb)
+                Tasks.Add(task);
+            
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao carregar tarefas: {ex.Message}");
+        }
+    }
+
     [RelayCommand]
-    private void AddTask()
+    private async Task AddTask()
     {
         if (string.IsNullOrWhiteSpace(NewTaskName))
             return;
@@ -83,33 +148,66 @@ public partial class MainViewModel : ObservableObject
         {
             Name = NewTaskName.Trim(),
             Description = NewTaskDescription?.Trim() ?? string.Empty,
+            CategoryId = SelectedCategoryForNewTask?.Id ?? 0,
             Category = SelectedCategoryForNewTask ?? Categories.FirstOrDefault(),
-            IsCompleted = false,
+            Status = TaskStatus.EmAndamento,
             CreatedAt = DateTime.Now
         };
 
+        await _databaseService.SaveTaskAsync(task);
         Tasks.Insert(0, task);
+        
         NewTaskName = string.Empty;
         NewTaskDescription = string.Empty;
         SelectedCategoryForNewTask = null;
+        
         ApplyFilter();
         UpdateCounters();
     }
 
     [RelayCommand]
-    private void RemoveTask(TaskItem task)
+    private async Task RemoveTask(TaskItem task)
     {
         if (task == null) return;
+        
+        await _databaseService.DeleteTaskAsync(task);
         Tasks.Remove(task);
         ApplyFilter();
         UpdateCounters();
     }
 
     [RelayCommand]
-    private void ToggleTask(TaskItem task)
+    private async Task CompleteTask(TaskItem task)
     {
         if (task == null) return;
-        task.IsCompleted = !task.IsCompleted;
+        
+        task.Status = TaskStatus.Concluido;
+        task.CompletedAt = DateTime.Now;
+        
+        await _databaseService.SaveTaskAsync(task);
+        ApplyFilter();
+        UpdateCounters();
+    }
+
+    [RelayCommand]
+    private async Task ChangeTaskStatus(TaskItem task)
+    {
+        if (task == null) return;
+        
+        // Ciclar entre os status
+        task.Status = task.Status switch
+        {
+            TaskStatus.EmAndamento => TaskStatus.Concluido,
+            TaskStatus.Concluido => TaskStatus.Atrasado,
+            TaskStatus.Atrasado => TaskStatus.EmAndamento,
+            _ => TaskStatus.EmAndamento
+        };
+
+        if (task.Status == TaskStatus.Concluido)
+            task.CompletedAt = DateTime.Now;
+
+        await _databaseService.SaveTaskAsync(task);
+        ApplyFilter();
         UpdateCounters();
     }
 
@@ -121,24 +219,42 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ShowAllTasks()
+    private void FilterByStatus(TaskStatus? status)
     {
-        SelectedFilterCategory = null;
+        SelectedFilterStatus = status;
         ApplyFilter();
     }
 
     [RelayCommand]
-    private void AddCategory()
+    private void ShowAllTasks()
+    {
+        SelectedFilterCategory = null;
+        SelectedFilterStatus = null;
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private void ChangeSortOption(SortOption sortOption)
+    {
+        SelectedSortOption = sortOption;
+        ApplyFilter();
+    }
+
+    [RelayCommand]
+    private async Task AddCategory()
     {
         if (string.IsNullOrWhiteSpace(NewCategoryName))
             return;
 
-        Categories.Add(new Category
+        var category = new Category
         {
             Name = NewCategoryName.Trim(),
             Color = NewCategoryColor,
             Icon = string.IsNullOrWhiteSpace(NewCategoryIcon) ? "📋" : NewCategoryIcon
-        });
+        };
+
+        await _databaseService.SaveCategoryAsync(category);
+        Categories.Add(category);
 
         NewCategoryName = string.Empty;
         NewCategoryColor = "#6366F1";
@@ -153,14 +269,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RemoveCategory(Category category)
+    private async Task RemoveCategory(Category category)
     {
         if (category == null) return;
 
-        var tasksToRemove = Tasks.Where(t => t.Category == category).ToList();
+        var tasksToRemove = Tasks.Where(t => t.CategoryId == category.Id).ToList();
         foreach (var task in tasksToRemove)
-            Tasks.Remove(task);
+            await RemoveTaskCommand.ExecuteAsync(task);
 
+        await _databaseService.DeleteCategoryAsync(category);
         Categories.Remove(category);
 
         if (SelectedFilterCategory == category)
@@ -170,12 +287,35 @@ public partial class MainViewModel : ObservableObject
         UpdateCounters();
     }
 
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        IsDarkTheme = !IsDarkTheme;
+        Application.Current!.UserAppTheme = IsDarkTheme ? AppTheme.Dark : AppTheme.Light;
+    }
+
     private void ApplyFilter()
     {
         FilteredTasks.Clear();
-        var source = SelectedFilterCategory == null
-            ? Tasks
-            : Tasks.Where(t => t.Category == SelectedFilterCategory);
+        
+        var source = Tasks.AsEnumerable();
+
+        // Filtrar por categoria
+        if (SelectedFilterCategory != null)
+            source = source.Where(t => t.CategoryId == SelectedFilterCategory.Id);
+
+        // Filtrar por status
+        if (SelectedFilterStatus != null)
+            source = source.Where(t => t.Status == SelectedFilterStatus);
+
+        // Ordenar
+        source = SelectedSortOption switch
+        {
+            SortOption.DataCriacao => source.OrderByDescending(t => t.CreatedAt),
+            SortOption.DataConclusao => source.OrderByDescending(t => t.CompletedAt ?? DateTime.MaxValue),
+            SortOption.Alfabetica => source.OrderBy(t => t.Name),
+            _ => source.OrderByDescending(t => t.CreatedAt)
+        };
 
         foreach (var task in source)
             FilteredTasks.Add(task);
@@ -184,7 +324,7 @@ public partial class MainViewModel : ObservableObject
     private void UpdateCounters()
     {
         TotalTasks = Tasks.Count;
-        CompletedTasks = Tasks.Count(t => t.IsCompleted);
+        CompletedTasks = Tasks.Count(t => t.Status == TaskStatus.Concluido);
         PendingTasks = TotalTasks - CompletedTasks;
     }
 }

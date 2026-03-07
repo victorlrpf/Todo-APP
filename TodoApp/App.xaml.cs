@@ -10,5 +10,8 @@ public partial class App : Application
             BarBackgroundColor = Color.FromArgb("#512BD4"),
             BarTextColor = Colors.White
         };
+        
+        // Definir tema padrão
+        UserAppTheme = AppTheme.Light;
     }
 }

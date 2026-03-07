@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using TodoApp.Services;
 using TodoApp.ViewModels;
 
 namespace TodoApp;
@@ -16,6 +17,7 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+        builder.Services.AddSingleton<DatabaseService>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<MainPage>();
 
