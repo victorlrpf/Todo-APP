@@ -3,6 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-android:
@@ -21,13 +22,22 @@ jobs:
         run: dotnet workload install maui
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore TodoApp/TodoApp.csproj
 
       - name: Publish APK
-        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -o output
+        # Removi o -o output para garantir que o APK seja gerado no local padrão corretamente
+        run: |
+          dotnet publish TodoApp/TodoApp.csproj `
+            -f net8.0-android `
+            -c Release `
+            -p:AndroidPackageFormats=apk `
+            -p:AndroidKeyStore=false
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: output
+          # Esta é a mudança chave: buscar qualquer arquivo .apk em qualquer subpasta
+          # Isso garante que o instalador seja incluído no ZIP, e não as DLLs.
+          path: "**/*.apk"
+          if-no-files-found: error
