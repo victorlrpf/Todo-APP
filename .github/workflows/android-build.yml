@@ -1,38 +1,30 @@
-name: Build Android APK
+name: Build Android
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build-android:
+  build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Install MAUI workload
-        run: dotnet workload install maui
+      - run: dotnet workload install maui
 
-      - name: Restore
-        run: dotnet restore
+      - run: dotnet restore
 
-      - name: Publish APK
-        run: |
-          dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:AndroidUseSharedRuntime=false
+      - run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release
 
-      - name: List APK files
-        run: dir -Recurse *.apk
-
-      - name: Upload APK
+      - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: todoapp-apk
+          name: android-build
           path: |
             **/*.apk
+            **/*.aab
