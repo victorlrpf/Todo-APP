@@ -3,7 +3,7 @@ using SQLite;
 
 namespace TodoApp.Models;
 
-public enum TaskStatus
+public enum TodoStatus
 {
     EmAndamento,
     Concluido,
@@ -14,8 +14,7 @@ public enum TaskStatus
 public partial class TaskItem : ObservableObject
 {
     [PrimaryKey, AutoIncrement]
-    [ObservableProperty]
-    private int id;
+    public int Id { get; set; }
 
     [ObservableProperty]
     private string name = string.Empty;
@@ -23,24 +22,21 @@ public partial class TaskItem : ObservableObject
     [ObservableProperty]
     private string description = string.Empty;
 
-    [ObservableProperty]
-    private TaskStatus status = TaskStatus.EmAndamento;
+    public TodoStatus Status { get; set; } = TodoStatus.EmAndamento;
 
-    [ObservableProperty]
-    private int categoryId;
+    public int CategoryId { get; set; }
 
     [Ignore]
-    [ObservableProperty]
-    private Category? category;
+    public Category? Category { get; set; }
 
-    [ObservableProperty]
-    private DateTime createdAt = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-    [ObservableProperty]
-    private DateTime? completedAt;
+    public DateTime? CompletedAt { get; set; }
 
-    [ObservableProperty]
-    private DateTime? dueDate;
+    public DateTime? DueDate { get; set; }
 
-    public bool IsOverdue => dueDate.HasValue && dueDate.Value < DateTime.Now && status != TaskStatus.Concluido;
+    public bool IsOverdue =>
+        DueDate.HasValue &&
+        DueDate.Value < DateTime.Now &&
+        Status != TodoStatus.Concluido;
 }
