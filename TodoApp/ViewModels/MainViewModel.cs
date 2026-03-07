@@ -39,7 +39,7 @@ public partial class MainViewModel : ObservableObject
     private Category? selectedFilterCategory;
 
     [ObservableProperty]
-    private TaskStatus? selectedFilterStatus;
+    private TodoStatus? selectedFilterStatus;
 
     [ObservableProperty]
     private SortOption selectedSortOption = SortOption.DataCriacao;
@@ -150,7 +150,7 @@ public partial class MainViewModel : ObservableObject
             Description = NewTaskDescription?.Trim() ?? string.Empty,
             CategoryId = SelectedCategoryForNewTask?.Id ?? 0,
             Category = SelectedCategoryForNewTask ?? Categories.FirstOrDefault(),
-            Status = TaskStatus.EmAndamento,
+            Status = TodoStatus.EmAndamento,
             CreatedAt = DateTime.Now
         };
 
@@ -181,7 +181,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (task == null) return;
         
-        task.Status = TaskStatus.Concluido;
+        task.Status = TodoStatus.Concluido;
         task.CompletedAt = DateTime.Now;
         
         await _databaseService.SaveTaskAsync(task);
@@ -197,13 +197,13 @@ public partial class MainViewModel : ObservableObject
         // Ciclar entre os status
         task.Status = task.Status switch
         {
-            TaskStatus.EmAndamento => TaskStatus.Concluido,
-            TaskStatus.Concluido => TaskStatus.Atrasado,
-            TaskStatus.Atrasado => TaskStatus.EmAndamento,
-            _ => TaskStatus.EmAndamento
+            TodoStatus.EmAndamento => TodoStatus.Concluido,
+            TodoStatus.Concluido => TodoStatus.Atrasado,
+            TodoStatus.Atrasado => TodoStatus.EmAndamento,
+            _ => TodoStatus.EmAndamento
         };
 
-        if (task.Status == TaskStatus.Concluido)
+        if (task.Status == TodoStatus.Concluido)
             task.CompletedAt = DateTime.Now;
 
         await _databaseService.SaveTaskAsync(task);
@@ -219,7 +219,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void FilterByStatus(TaskStatus? status)
+    private void FilterByStatus(TodoStatus? status)
     {
         SelectedFilterStatus = status;
         ApplyFilter();
@@ -324,7 +324,7 @@ public partial class MainViewModel : ObservableObject
     private void UpdateCounters()
     {
         TotalTasks = Tasks.Count;
-        CompletedTasks = Tasks.Count(t => t.Status == TaskStatus.Concluido);
+        CompletedTasks = Tasks.Count(t => t.Status == TodoStatus.Concluido);
         PendingTasks = TotalTasks - CompletedTasks;
     }
 }
