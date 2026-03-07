@@ -155,11 +155,11 @@
                            Padding="12"
                            BackgroundColor="#F0F0F0" />
                     <Picker Title="Selecione uma categoria"
-                            ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding SelectedCategoryForNewTask}"
-                            ItemDisplayBinding="{Binding Name}"
-                            Padding="12"
-                            BackgroundColor="#F0F0F0" />
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategoryForNewTask}"
+                          ItemDisplayBinding="{Binding Name}"
+                          BackgroundColor="#F0F0F0"
+                          Margin="0,4" />
                     <Button Text="Adicionar Tarefa"
                             Padding="12,12"
                             FontSize="14"
