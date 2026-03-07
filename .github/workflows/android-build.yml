@@ -25,14 +25,9 @@ jobs:
 
       - name: Publish APK
         run: |
-          dotnet publish TodoApp/TodoApp.csproj `
-          -f net8.0-android `
-          -c Release `
-          -p:AndroidPackageFormats=apk `
-          -p:AndroidKeyStore=false `
-          -p:AndroidUseSharedRuntime=false
+          dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormats=apk -p:AndroidUseSharedRuntime=false
 
-      - name: Show build files
+      - name: List APK files
         run: dir -Recurse *.apk
 
       - name: Upload APK
