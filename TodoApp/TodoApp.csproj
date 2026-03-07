@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0-android</TargetFrameworks>
     <UseMaui>true</UseMaui>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TodoApp</RootNamespace>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -14,20 +16,34 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
-    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+      21.0
+    </SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg"
+              ForegroundFile="Resources\AppIcon\appiconfg.svg"
+              Color="#512BD4" />
+
+    <MauiSplashScreen Include="Resources\Splash\splash.svg"
+                      Color="#512BD4"
+                      BaseSize="128,128" />
+
     <MauiImage Include="Resources\Images\*" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="Resources\Raw\**"
+               LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-  <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-  <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-</ItemGroup>
+    <!-- PACOTES OBRIGATÓRIOS DO MAUI -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
+
+    <!-- PACOTES DO PROJETO -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+  </ItemGroup>
 
 </Project>
