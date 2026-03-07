@@ -25,19 +25,18 @@ jobs:
         run: dotnet restore TodoApp/TodoApp.csproj
 
       - name: Publish APK
-        # Removi o -o output para garantir que o APK seja gerado no local padrão corretamente
+        # Mantive o seu comando, mas adicionei a flag de KeyStore=false para garantir que o APK seja gerado sem erro de assinatura
         run: |
           dotnet publish TodoApp/TodoApp.csproj `
             -f net8.0-android `
             -c Release `
-            -p:AndroidPackageFormats=apk `
+            -p:AndroidPackageFormat=apk `
             -p:AndroidKeyStore=false
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          # Esta é a mudança chave: buscar qualquer arquivo .apk em qualquer subpasta
-          # Isso garante que o instalador seja incluído no ZIP, e não as DLLs.
-          path: "**/*.apk"
+          # MUDANÇA CHAVE: Buscar o arquivo .apk real na pasta onde o MAUI o salva por padrão
+          path: "TodoApp/bin/Release/net8.0-android/*-Signed.apk"
           if-no-files-found: error
