@@ -7,8 +7,7 @@ namespace TodoApp.Models;
 public partial class Category : ObservableObject
 {
     [PrimaryKey, AutoIncrement]
-    [ObservableProperty]
-    private int id;
+    public int Id { get; set; }
 
     [ObservableProperty]
     private string name = string.Empty;
