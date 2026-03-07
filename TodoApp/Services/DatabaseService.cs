@@ -85,7 +85,7 @@ public class DatabaseService
             .ToListAsync();
     }
 
-    public async Task<List<TaskItem>> GetTasksByStatusAsync(TaskStatus status)
+    public async Task<List<TaskItem>> GetTasksByStatusAsync(TodoStatus status)
     {
         await InitializeAsync();
         return await _database!.Table<TaskItem>()
