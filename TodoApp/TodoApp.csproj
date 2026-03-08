@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Maui.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net8.0-android</TargetFrameworks>
@@ -6,6 +6,7 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseInterpreter>false</UseInterpreter>
 
     <ApplicationTitle>Registrador de Tarefas</ApplicationTitle>
     <ApplicationId>com.victorlrpf.todoapp</ApplicationId>
@@ -16,12 +17,11 @@
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
     
-    <!-- Configurações para garantir a geração do APK no GitHub Actions -->
+    <!-- Configurações para APK -->
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <AndroidKeyStore>false</AndroidKeyStore>
     <AndroidGenerateAppBundle>false</AndroidGenerateAppBundle>
     <AndroidUseAapt2>true</AndroidUseAapt2>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
   </PropertyGroup>
 
   <ItemGroup>
