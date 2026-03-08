@@ -25,29 +25,50 @@ jobs:
       - name: Restore NuGet packages
         run: dotnet restore
 
-      - name: Build APK
-        run: dotnet build TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -p:AndroidKeyStore=false
+      - name: Build APK with SignAndroidPackage target
+        run: dotnet build TodoApp/TodoApp.csproj -f net8.0-android -c Release -t:SignAndroidPackage -p:AndroidKeyStore=false -p:AndroidSigningKeyStore=false
 
-      - name: Find APK in bin directory
+      - name: Find APK in intermediate directory
         shell: pwsh
         run: |
-          Write-Host "Procurando APK em bin/Release..."
-          $apkFile = Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Filter "*.apk" -Recurse | Select-Object -First 1
+          Write-Host "=== Procurando APK em todos os diretórios ==="
           
-          if ($apkFile) {
-            Write-Host "APK encontrado: $($apkFile.FullName)"
-            Write-Host "Tamanho: $([math]::Round($apkFile.Length / 1MB, 2)) MB"
-            
-            # Copiar para diretório de saída
-            New-Item -ItemType Directory -Path "output" -Force | Out-Null
-            Copy-Item -Path $apkFile.FullName -Destination "output/$($apkFile.Name)" -Force
-            Write-Host "APK copiado para output"
-          } else {
-            Write-Host "ERRO: APK não encontrado!"
-            Write-Host "Listando conteúdo de bin/Release/net8.0-android:"
-            Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Recurse | ForEach-Object { Write-Host $_.FullName }
+          # Procurar em vários locais possíveis
+          $searchPaths = @(
+            "TodoApp/bin/Release/net8.0-android",
+            "TodoApp/obj/Release/net8.0-android",
+            "TodoApp/bin/Release",
+            "."
+          )
+          
+          $apkFile = $null
+          
+          foreach ($path in $searchPaths) {
+            if (Test-Path $path) {
+              Write-Host "Procurando em: $path"
+              $found = Get-ChildItem -Path $path -Filter "*.apk" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+              if ($found) {
+                $apkFile = $found
+                Write-Host "✓ APK encontrado: $($found.FullName)"
+                break
+              }
+            }
+          }
+          
+          if (-not $apkFile) {
+            Write-Host "✗ APK não encontrado em nenhum diretório"
+            Write-Host ""
+            Write-Host "=== Listando TODOS os arquivos gerados ==="
+            Get-ChildItem -Path "TodoApp" -Recurse -Include "*.apk", "*.aab" -ErrorAction SilentlyContinue | ForEach-Object { 
+              Write-Host "Encontrado: $($_.FullName)"
+            }
             exit 1
           }
+          
+          # Copiar para diretório de saída
+          New-Item -ItemType Directory -Path "output" -Force | Out-Null
+          Copy-Item -Path $apkFile.FullName -Destination "output/$($apkFile.Name)" -Force
+          Write-Host "APK copiado para output"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
