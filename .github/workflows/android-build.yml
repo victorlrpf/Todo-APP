@@ -7,7 +7,6 @@ on:
 jobs:
   build-android:
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,8 +25,33 @@ jobs:
       - name: Publish APK
         run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -o output
 
+      - name: Find APK file
+        id: find_apk
+        shell: pwsh
+        run: |
+          $apkFile = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse | Select-Object -First 1
+          if ($apkFile) {
+            Write-Host "APK encontrado: $($apkFile.FullName)"
+            echo "apk_path=$($apkFile.FullName)" >> $env:GITHUB_OUTPUT
+            echo "apk_name=$($apkFile.Name)" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "Nenhum arquivo APK encontrado!"
+            exit 1
+          }
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: output
+          name: ${{ steps.find_apk.outputs.apk_name }}
+          path: ${{ steps.find_apk.outputs.apk_path }}
+          if-no-files-found: error
+
+      - name: Create Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.find_apk.outputs.apk_path }}
+          tag_name: v${{ github.run_number }}
+          body: "APK gerado automaticamente pelo GitHub Actions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
