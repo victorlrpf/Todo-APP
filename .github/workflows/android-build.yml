@@ -1,18 +1,3 @@
-Skip to content
-victorlrpf
-Todo-APP
-Repository navigation
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Build Android APK
-Update TodoApp.csproj with new properties and packages #14
-Workflow file for this run
-.github/workflows/android-build.yml at 5c0d0f3
 name: Build Android APK
 
 on:
