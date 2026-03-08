@@ -1,9 +1,23 @@
+Skip to content
+victorlrpf
+Todo-APP
+Repository navigation
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Build Android APK
+Update TodoApp.csproj with new properties and packages #14
+Workflow file for this run
+.github/workflows/android-build.yml at 5c0d0f3
 name: Build Android APK
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build-android:
@@ -22,21 +36,13 @@ jobs:
         run: dotnet workload install maui
 
       - name: Restore
-        run: dotnet restore TodoApp/TodoApp.csproj
+        run: dotnet restore
 
       - name: Publish APK
-        # Mantive o seu comando, mas adicionei a flag de KeyStore=false para garantir que o APK seja gerado sem erro de assinatura
-        run: |
-          dotnet publish TodoApp/TodoApp.csproj `
-            -f net8.0-android `
-            -c Release `
-            -p:AndroidPackageFormat=apk `
-            -p:AndroidKeyStore=false
+        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -o output
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          # MUDANÇA CHAVE: Buscar o arquivo .apk real na pasta onde o MAUI o salva por padrão
-          path: "TodoApp/bin/Release/net8.0-android/*-Signed.apk"
-          if-no-files-found: error
+          path: output
