@@ -1,4 +1,4 @@
-name: Build Android APK - Debug
+name: Build Android APK
 
 on:
   push:
@@ -17,71 +17,33 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Install MAUI workload
-        run: dotnet workload install maui
+        run: |
+          dotnet workload restore
+          dotnet workload install maui
+          dotnet workload install maui-android
 
-      - name: Restore
+      - name: Restore NuGet packages
         run: dotnet restore
 
-      - name: Publish APK
-        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -o output
+      - name: Build and Publish APK
+        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -p:AndroidKeyStore=false -o output
 
-      - name: Debug - List all files in output
+      - name: Find APK
         shell: pwsh
         run: |
-          Write-Host "=== Conteúdo do diretório output ==="
-          Get-ChildItem -Path "output" -Recurse | ForEach-Object { Write-Host $_.FullName }
-          
-          Write-Host "`n=== Procurando por .apk ==="
-          $apkFiles = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse
-          Write-Host "APK files encontrados: $($apkFiles.Count)"
-          $apkFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
-          
-          Write-Host "`n=== Procurando por .aab ==="
-          $aabFiles = Get-ChildItem -Path "output" -Filter "*.aab" -Recurse
-          Write-Host "AAB files encontrados: $($aabFiles.Count)"
-          $aabFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
-
-      - name: Check bin directory
-        shell: pwsh
-        run: |
-          Write-Host "=== Conteúdo do diretório bin ==="
-          Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Recurse | ForEach-Object { Write-Host $_.FullName }
-
-      - name: Find and Upload APK
-        shell: pwsh
-        run: |
-          # Procurar em todos os possíveis locais
-          $searchPaths = @(
-            "output",
-            "TodoApp/bin/Release/net8.0-android",
-            "TodoApp/bin/Release/net8.0-android/publish"
-          )
-          
-          $apkFile = $null
-          foreach ($path in $searchPaths) {
-            if (Test-Path $path) {
-              $found = Get-ChildItem -Path $path -Filter "*.apk" -Recurse | Select-Object -First 1
-              if ($found) {
-                $apkFile = $found
-                Write-Host "APK encontrado em: $($found.FullName)"
-                break
-              }
-            }
-          }
-          
+          $apkFile = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse | Select-Object -First 1
           if ($apkFile) {
-            # Criar diretório para o artifact
-            New-Item -ItemType Directory -Path "artifacts" -Force
-            Copy-Item -Path $apkFile.FullName -Destination "artifacts/$($apkFile.Name)"
-            Write-Host "APK copiado para artifacts"
+            Write-Host "APK encontrado: $($apkFile.FullName)"
+            Write-Host "Tamanho: $($apkFile.Length / 1MB) MB"
           } else {
-            Write-Host "ERRO: Nenhum APK encontrado!"
+            Write-Host "ERRO: APK não encontrado em output"
+            Get-ChildItem -Path "output" -Recurse
             exit 1
           }
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TodoApp-APK
-          path: artifacts/*.apk
+          path: output/*.apk
           if-no-files-found: error
