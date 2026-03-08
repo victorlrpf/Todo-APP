@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK - Debug
 
 on:
   push:
@@ -25,33 +25,63 @@ jobs:
       - name: Publish APK
         run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -o output
 
-      - name: Find APK file
-        id: find_apk
+      - name: Debug - List all files in output
         shell: pwsh
         run: |
-          $apkFile = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse | Select-Object -First 1
+          Write-Host "=== Conteúdo do diretório output ==="
+          Get-ChildItem -Path "output" -Recurse | ForEach-Object { Write-Host $_.FullName }
+          
+          Write-Host "`n=== Procurando por .apk ==="
+          $apkFiles = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse
+          Write-Host "APK files encontrados: $($apkFiles.Count)"
+          $apkFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+          
+          Write-Host "`n=== Procurando por .aab ==="
+          $aabFiles = Get-ChildItem -Path "output" -Filter "*.aab" -Recurse
+          Write-Host "AAB files encontrados: $($aabFiles.Count)"
+          $aabFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+
+      - name: Check bin directory
+        shell: pwsh
+        run: |
+          Write-Host "=== Conteúdo do diretório bin ==="
+          Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Recurse | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Find and Upload APK
+        shell: pwsh
+        run: |
+          # Procurar em todos os possíveis locais
+          $searchPaths = @(
+            "output",
+            "TodoApp/bin/Release/net8.0-android",
+            "TodoApp/bin/Release/net8.0-android/publish"
+          )
+          
+          $apkFile = $null
+          foreach ($path in $searchPaths) {
+            if (Test-Path $path) {
+              $found = Get-ChildItem -Path $path -Filter "*.apk" -Recurse | Select-Object -First 1
+              if ($found) {
+                $apkFile = $found
+                Write-Host "APK encontrado em: $($found.FullName)"
+                break
+              }
+            }
+          }
+          
           if ($apkFile) {
-            Write-Host "APK encontrado: $($apkFile.FullName)"
-            echo "apk_path=$($apkFile.FullName)" >> $env:GITHUB_OUTPUT
-            echo "apk_name=$($apkFile.Name)" >> $env:GITHUB_OUTPUT
+            # Criar diretório para o artifact
+            New-Item -ItemType Directory -Path "artifacts" -Force
+            Copy-Item -Path $apkFile.FullName -Destination "artifacts/$($apkFile.Name)"
+            Write-Host "APK copiado para artifacts"
           } else {
-            Write-Host "Nenhum arquivo APK encontrado!"
+            Write-Host "ERRO: Nenhum APK encontrado!"
             exit 1
           }
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.find_apk.outputs.apk_name }}
-          path: ${{ steps.find_apk.outputs.apk_path }}
+          name: TodoApp-APK
+          path: artifacts/*.apk
           if-no-files-found: error
-
-      - name: Create Release
-        if: success()
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ steps.find_apk.outputs.apk_path }}
-          tag_name: v${{ github.run_number }}
-          body: "APK gerado automaticamente pelo GitHub Actions"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
