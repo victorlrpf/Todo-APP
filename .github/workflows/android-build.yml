@@ -25,19 +25,27 @@ jobs:
       - name: Restore NuGet packages
         run: dotnet restore
 
-      - name: Build and Publish APK
-        run: dotnet publish TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -p:AndroidKeyStore=false -o output
+      - name: Build APK
+        run: dotnet build TodoApp/TodoApp.csproj -f net8.0-android -c Release -p:AndroidPackageFormat=apk -p:AndroidKeyStore=false
 
-      - name: Find APK
+      - name: Find APK in bin directory
         shell: pwsh
         run: |
-          $apkFile = Get-ChildItem -Path "output" -Filter "*.apk" -Recurse | Select-Object -First 1
+          Write-Host "Procurando APK em bin/Release..."
+          $apkFile = Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Filter "*.apk" -Recurse | Select-Object -First 1
+          
           if ($apkFile) {
             Write-Host "APK encontrado: $($apkFile.FullName)"
-            Write-Host "Tamanho: $($apkFile.Length / 1MB) MB"
+            Write-Host "Tamanho: $([math]::Round($apkFile.Length / 1MB, 2)) MB"
+            
+            # Copiar para diretório de saída
+            New-Item -ItemType Directory -Path "output" -Force | Out-Null
+            Copy-Item -Path $apkFile.FullName -Destination "output/$($apkFile.Name)" -Force
+            Write-Host "APK copiado para output"
           } else {
-            Write-Host "ERRO: APK não encontrado em output"
-            Get-ChildItem -Path "output" -Recurse
+            Write-Host "ERRO: APK não encontrado!"
+            Write-Host "Listando conteúdo de bin/Release/net8.0-android:"
+            Get-ChildItem -Path "TodoApp/bin/Release/net8.0-android" -Recurse | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
 
